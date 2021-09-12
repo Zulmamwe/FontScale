@@ -1,83 +1,6 @@
--- chat options
-local opts = {
-    type='group',
-    args = {
-		quest_scale = {
-			type = 'text',
-            name = "Quest scale value",
-            desc = "Sets the scale of quest fonts",
-            usage = "<scale number>",
-            get = "get_quest_scale",
-            set = "set_quest_scale",
-		},
-		quest = {
-			type = 'toggle',
-            name = "Quest scale toggle",
-            desc = "Enable or disable quest fonts scale",
-            get = "get_quest",
-            set = "toggle_quest"
-		},
-		big_scale = {
-			type = 'text',
-            name = "Big fonts scale value",
-            desc = "Sets the scale of big fonts",
-            usage = "<scale number>",
-            get = "get_big_scale",
-            set = "set_big_scale",
-		},
-		big = {
-			type = 'toggle',
-            name = "Big fonts scale toggle",
-            desc = "Enable or disable big fonts scale",
-            get = "get_big",
-            set = "toggle_big"
-		},
-		other_scale = {
-			type = 'text',
-            name = "Other fonts scale value",
-            desc = "Sets the scale of all other fonts",
-            usage = "<scale number>",
-            get = "get_other_scale",
-            set = "set_other_scale",
-		},
-		other = {
-			type = 'toggle',
-            name = "Other fonts scale toggle",
-            desc = "Enable or disable all other fonts scale",
-            get = "get_other",
-            set = "toggle_other"
-		},
-		timer = {
-			type = 'toggle',
-            name = "Toggle update by timer",
-            desc = "Enable or disable fonts scale refresh by timer",
-            get = "get_timer",
-            set = "toggle_timer"
-		},
-		timer_interval = {
-			type = 'text',
-            name = "Timer interval (s)",
-            desc = "Sets the time between font scale refreshes (in seconds)",
-            usage = "<seconds>",
-            get = "get_timer_interval",
-            set = "set_timer_interval",
-		},
-		reload = {
-			type = 'execute',
-			name = 'Refresh',
-			desc = 'Reapply font scale',
-			func = 'refresh'
-		},
-		r = {
-			type = 'execute',
-			name = 'Refresh',
-			desc = 'Reapply font scale',
-			func = 'refresh'
-		}
-    },
-}
+local FontScale = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceEvent-2.0", "AceDB-2.0")
 
-local fonts = {
+FontScale.fonts = {
 	quest = {
 		{obj = QuestTitleFont, size = 18},
 		{obj = QuestFont, size = 13},
@@ -115,9 +38,6 @@ local fonts = {
 	}
 }
 
-local FontScale = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceEvent-2.0", "AceDB-2.0")
-FontScale:RegisterChatCommand({ "/fontscale", "/fs" }, opts)
-
 FontScale:RegisterDB("FontScaleDB")
 FontScale:RegisterDefaults("profile", {
 	quest_scale = 1.3,
@@ -135,6 +55,7 @@ function FontScale:OnInitialize()
 end
 
 function FontScale:OnEnable()
+	FontScale:options()
 	FontScale:refresh()
 	self:RegisterEvent("TRAINER_UPDATE", "refresh")
 	self:RegisterEvent("AUCTION_HOUSE_SHOW", "refresh")
@@ -142,6 +63,7 @@ function FontScale:OnEnable()
 	self:RegisterEvent("MAIL_SHOW", "refresh")
 	self:RegisterEvent("UPDATE_MACROS", "refresh")
 	self:RegisterEvent("BAG_OPEN", "refresh")
+	self:RegisterEvent("BANKFRAME_OPENED", "refresh")
 	FontScale:HookTalent()
 	FontScale:HookBags()
 	
@@ -150,17 +72,99 @@ function FontScale:OnEnable()
 	end
 end
 
+function FontScale:options()
+	local opts = {
+		type='group',
+		args = {
+			quest_scale = {
+				type = 'text',
+				name = "Quest scale value",
+				desc = "Sets the scale of quest fonts",
+				usage = "<scale number>",
+				get = "get_quest_scale",
+				set = "set_quest_scale",
+			},
+			quest = {
+				type = 'toggle',
+				name = "Quest scale toggle",
+				desc = "Enable or disable quest fonts scale",
+				get = "get_quest",
+				set = "toggle_quest"
+			},
+			big_scale = {
+				type = 'text',
+				name = "Big fonts scale value",
+				desc = "Sets the scale of big fonts",
+				usage = "<scale number>",
+				get = "get_big_scale",
+				set = "set_big_scale",
+			},
+			big = {
+				type = 'toggle',
+				name = "Big fonts scale toggle",
+				desc = "Enable or disable big fonts scale",
+				get = "get_big",
+				set = "toggle_big"
+			},
+			other_scale = {
+				type = 'text',
+				name = "Other fonts scale value",
+				desc = "Sets the scale of all other fonts",
+				usage = "<scale number>",
+				get = "get_other_scale",
+				set = "set_other_scale",
+			},
+			other = {
+				type = 'toggle',
+				name = "Other fonts scale toggle",
+				desc = "Enable or disable all other fonts scale",
+				get = "get_other",
+				set = "toggle_other"
+			},
+			timer = {
+				type = 'toggle',
+				name = "Toggle update by timer",
+				desc = "Enable or disable fonts scale refresh by timer",
+				get = "get_timer",
+				set = "toggle_timer"
+			},
+			timer_interval = {
+				type = 'text',
+				name = "Timer interval (s)",
+				desc = "Sets the time between font scale refreshes (in seconds)",
+				usage = "<seconds>",
+				get = "get_timer_interval",
+				set = "set_timer_interval",
+			},
+			reload = {
+				type = 'execute',
+				name = 'Refresh',
+				desc = 'Reapply font scale',
+				func = 'refresh'
+			},
+			r = {
+				type = 'execute',
+				name = 'Refresh',
+				desc = 'Reapply font scale',
+				func = 'refresh'
+			}
+		},
+	}
+	FontScale:RegisterChatCommand({ "/fontscale", "/fs" }, opts)
+end
+
+
 function FontScale:refresh()
 	if FontScale:get_quest() then
-		FontScale:Iterate(fonts.quest, FontScale:get_quest_scale())
+		FontScale:Iterate(FontScale.fonts.quest, FontScale:get_quest_scale())
 	end
 	
 	if FontScale:get_big() then
-		FontScale:Iterate(fonts.big, FontScale:get_big_scale())
+		FontScale:Iterate(FontScale.fonts.big, FontScale:get_big_scale())
 	end
 	
 	if FontScale:get_other() then
-		FontScale:Iterate(fonts.other, FontScale:get_other_scale())
+		FontScale:Iterate(FontScale.fonts.other, FontScale:get_other_scale())
 	end
 end
 
