@@ -47,7 +47,7 @@ FontScale:RegisterDefaults("profile", {
 	other_scale = 1.3,
 	other = true,
 	timer_interval = 1,
-	timer = false
+	timer = true
 } )
 
 function FontScale:OnInitialize()
